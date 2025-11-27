@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>Flashcard Học Từ Vựng - Cảm Xúc</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Righteous&family=DM+Sans:wght@400;500;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --safe-top: env(safe-area-inset-top);
+      --safe-bottom: env(safe-area-inset-bottom);
+      --safe-left: env(safe-area-inset-left);
+      --safe-right: env(safe-area-inset-right);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #4c1d95 100%);
+      min-height: 100vh;
+      color: white;
+      overflow-x: hidden;
+      touch-action: manipulation;
+      padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+    }
+
+    .app-container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    h1 {
+      font-family: 'Righteous', cursive;
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
+    }
+
+    .mode-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .mode-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 16px 12px;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      touch-action: manipulation;
+      backdrop-filter: blur(10px);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .mode-btn:active {
+      transform: scale(0.95);
+    }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border-color: #a78bfa;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+    }
+
+    .mode-btn .emoji {
+      display: block;
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+    }
+
+    .category-filter {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+
+    .category-filter::-webkit-scrollbar {
+      display: none;
+    }
+
+    .category-chip {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 8px 16px;
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s;
+      touch-action: manipulation;
+    }
+
+    .category-chip:active {
+      transform: scale(0.95);
+    }
+
+    .category-chip.active {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      border-color: #fbbf24;
+    }
+
+    .flashcard-container {
+      perspective: 1000px;
+      margin-bottom: 24px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flashcard {
+      width: 100%;
+      height: 320px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 24px;
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-front {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .card-back {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      transform: rotateY(180deg);
+    }
+
+    .card-emoji {
+      font-size: 3rem;
+      margin-bottom: 16px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .card-word {
+      font-family: 'Righteous', cursive;
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+      color: white;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-meaning-en {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .card-meaning-vi {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 16px;
+    }
+
+    .card-example {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    .card-category {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .control-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 14px 20px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      touch-action: manipulation;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .control-btn:active {
+      transform: scale(0.95);
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .control-btn.primary {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border-color: #fcd34d;
+    }
+
+    .stats-footer {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: auto;
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-family: 'Righteous', cursive;
+      font-size: 1.8rem;
+      color: #fbbf24;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    .test-container, .match-container, .typing-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .question-card {
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      border-radius: 24px;
+      padding: 28px 24px;
+      margin-bottom: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .question-number {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .question-text {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .question-word {
+      font-family: 'Righteous', cursive;
+      font-size: 1.8rem;
+      color: #fbbf24;
+      margin-bottom: 12px;
+    }
+
+    .answer-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .answer-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 16px 20px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      touch-action: manipulation;
+      text-align: left;
+      backdrop-filter: blur(10px);
+    }
+
+    .answer-btn:active {
+      transform: scale(0.98);
+    }
+
+    .answer-btn.correct {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-color: #34d399;
+    }
+
+    .answer-btn.incorrect {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      border-color: #f87171;
+    }
+
+    .answer-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .result-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .result-emoji {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      animation: bounce 1s ease infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .result-score {
+      font-family: 'Righteous', cursive;
+      font-size: 3rem;
+      color: #fbbf24;
+      margin-bottom: 12px;
+    }
+
+    .result-text {
+      font-size: 1.2rem;
+      margin-bottom: 32px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .match-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .match-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 20px 16px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      touch-action: manipulation;
+      text-align: center;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .match-card:active {
+      transform: scale(0.95);
+    }
+
+    .match-card.selected {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      border-color: #fcd34d;
+      box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+    }
+
+    .match-card.matched {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-color: #34d399;
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .match-card.wrong {
+      animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    .timer {
+      text-align: center;
+      margin-bottom: 20px;
+      font-family: 'Righteous', cursive;
+      font-size: 2rem;
+      color: #fbbf24;
+    }
+
+    .typing-input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 16px;
+      padding: 16px 20px;
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 600;
+      width: 100%;
+      margin-bottom: 16px;
+      backdrop-filter: blur(10px);
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .typing-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .typing-input:focus {
+      outline: none;
+      border-color: #fbbf24;
+      box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+    }
+
+    .hint-text {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    .typing-feedback {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .typing-feedback.correct {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .typing-feedback.incorrect {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      .card-word {
+        font-size: 2rem;
+      }
+
+      .control-btn, .mode-btn, .answer-btn {
+        min-height: 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Vocabulary Database - Emotions & Feelings
+    const VOCABULARY = [
+      { word: "Embarrassment", meaningEn: "Feeling ashamed or awkward", meaningVi: "Sự lúng túng, xấu hổ", example: "She felt embarrassment when she tripped in public.", category: "Negative", emoji: "😳" },
+      { word: "Worry", meaningEn: "Feeling anxious or troubled", meaningVi: "Lo lắng, băn khoăn", example: "Don't worry, everything will be fine.", category: "Negative", emoji: "😟" },
+      { word: "Disgust", meaningEn: "Strong feeling of dislike", meaningVi: "Ghê tởm, kinh tởm", example: "He felt disgust at the smell.", category: "Negative", emoji: "🤢" },
+      { word: "Nerve", meaningEn: "Courage or confidence", meaningVi: "Can đảm, bạo gan", example: "It takes nerve to speak in public.", category: "Positive", emoji: "💪" },
+      { word: "Annoyance", meaningEn: "Feeling slightly angry", meaningVi: "Sự khó chịu, bực mình", example: "She showed annoyance at the delay.", category: "Negative", emoji: "😤" },
+      { word: "Anger", meaningEn: "Strong feeling of displeasure", meaningVi: "Sự tức giận, giận dữ", example: "He couldn't control his anger.", category: "Negative", emoji: "😠" },
+      { word: "Surprise", meaningEn: "Feeling of being astonished", meaningVi: "Sự ngạc nhiên, bất ngờ", example: "The gift was a pleasant surprise.", category: "Neutral", emoji: "😲" },
+      { word: "Excitement", meaningEn: "Feeling of great enthusiasm", meaningVi: "Sự phấn khích, hào hứng", example: "The children were filled with excitement.", category: "Positive", emoji: "🤩" },
+      { word: "Fear", meaningEn: "Feeling of being afraid", meaningVi: "Nỗi sợ hãi, lo sợ", example: "He overcame his fear of heights.", category: "Negative", emoji: "😨" },
+      { word: "Fright", meaningEn: "Sudden intense fear", meaningVi: "Sự hoảng sợ, khiếp sợ", example: "She got a terrible fright from the noise.", category: "Negative", emoji: "😱" },
+      { word: "Thrill", meaningEn: "Feeling of excitement and pleasure", meaningVi: "Sự hồi hộp, kích động", example: "The roller coaster gave me a real thrill.", category: "Positive", emoji: "🎢" },
+      { word: "Boredom", meaningEn: "Feeling of being uninterested", meaningVi: "Sự buồn chán, nhàm chán", example: "He yawned with boredom during the lecture.", category: "Negative", emoji: "😑" },
+      { word: "Sympathy", meaningEn: "Feeling of pity and understanding", meaningVi: "Sự thông cảm, đồng cảm", example: "I have great sympathy for his situation.", category: "Positive", emoji: "🤝" },
+      { word: "Relaxation", meaningEn: "State of being calm and stress-free", meaningVi: "Sự thư giãn, nghỉ ngơi", example: "Yoga brings deep relaxation.", category: "Positive", emoji: "😌" }
+    ];
+
+    function FlashcardApp() {
+      const [mode, setMode] = useState('study');
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [isFlipped, setIsFlipped] = useState(false);
+      const [studied, setStudied] = useState(new Set());
+      const [selectedCategory, setSelectedCategory] = useState('All');
+      const [voices, setVoices] = useState([]);
+      
+      // Test mode states
+      const [testQuestions, setTestQuestions] = useState([]);
+      const [currentQuestion, setCurrentQuestion] = useState(0);
+      const [testAnswers, setTestAnswers] = useState([]);
+      const [testScore, setTestScore] = useState(null);
+      
+      // Match mode states
+      const [matchCards, setMatchCards] = useState([]);
+      const [selectedCards, setSelectedCards] = useState([]);
+      const [matchedPairs, setMatchedPairs] = useState(new Set());
+      const [matchTime, setMatchTime] = useState(0);
+      const [matchComplete, setMatchComplete] = useState(false);
+      
+      // Typing mode states
+      const [typingQuestion, setTypingQuestion] = useState(null);
+      const [typingInput, setTypingInput] = useState('');
+      const [typingScore, setTypingScore] = useState(0);
+      const [typingTotal, setTypingTotal] = useState(0);
+      const [typingFeedback, setTypingFeedback] = useState(null);
+      const [showHint, setShowHint] = useState(false);
+      const [hintsUsed, setHintsUsed] = useState(0);
+
+      const timerRef = useRef(null);
+
+      // Load voices on mount
+      useEffect(() => {
+        const loadVoices = () => {
+          const availableVoices = speechSynthesis.getVoices();
+          setVoices(availableVoices);
+        };
+
+        loadVoices();
+        speechSynthesis.onvoiceschanged = loadVoices;
+      }, []);
+
+      // Get filtered vocabulary
+      const filteredVocab = selectedCategory === 'All' 
+        ? VOCABULARY 
+        : VOCABULARY.filter(v => v.category === selectedCategory);
+
+      const categories = ['All', ...new Set(VOCABULARY.map(v => v.category))];
+
+      // Speak word function
+      const speakWord = (word) => {
+        if ('speechSynthesis' in window) {
+          speechSynthesis.cancel();
+          
+          const utterance = new SpeechSynthesisUtterance(word);
+          utterance.rate = 1.05;
+          utterance.pitch = 1.15;
+          
+          // Prioritize natural female voices
+          const preferredVoices = voices.filter(v => 
+            v.name.includes('Samantha') || 
+            v.name.includes('Google UK English Female') ||
+            v.name.includes('Microsoft Libby') ||
+            v.name.includes('Female')
+          );
+          
+          if (preferredVoices.length > 0) {
+            utterance.voice = preferredVoices[0];
+          } else if (voices.length > 0) {
+            const englishVoice = voices.find(v => v.lang.startsWith('en'));
+            if (englishVoice) utterance.voice = englishVoice;
+          }
+          
+          speechSynthesis.speak(utterance);
+        }
+      };
+
+      // Study mode functions
+      const handleCardClick = () => {
+        setIsFlipped(!isFlipped);
+        if (!isFlipped) {
+          speakWord(filteredVocab[currentIndex].word);
+        }
+      };
+
+      const handleNext = () => {
+        setStudied(new Set([...studied, currentIndex]));
+        setCurrentIndex((currentIndex + 1) % filteredVocab.length);
+        setIsFlipped(false);
+      };
+
+      const handlePrev = () => {
+        setCurrentIndex((currentIndex - 1 + filteredVocab.length) % filteredVocab.length);
+        setIsFlipped(false);
+      };
+
+      const handleSpeakClick = (e) => {
+        e.stopPropagation();
+        speakWord(filteredVocab[currentIndex].word);
+      };
+
+      // Test mode functions
+      const startTest = () => {
+        const shuffled = [...VOCABULARY].sort(() => Math.random() - 0.5).slice(0, 10);
+        const questions = shuffled.map(word => {
+          const isTrue = Math.random() > 0.5;
+          let displayMeaning;
+          
+          if (isTrue) {
+            displayMeaning = word.meaningVi;
+          } else {
+            const otherWords = VOCABULARY.filter(w => w.word !== word.word);
+            const randomWord = otherWords[Math.floor(Math.random() * otherWords.length)];
+            displayMeaning = randomWord.meaningVi;
+          }
+          
+          return {
+            word: word.word,
+            meaning: displayMeaning,
+            correctMeaning: word.meaningVi,
+            isTrue,
+            emoji: word.emoji
+          };
+        });
+        
+        setTestQuestions(questions);
+        setCurrentQuestion(0);
+        setTestAnswers([]);
+        setTestScore(null);
+      };
+
+      const handleTestAnswer = (answer) => {
+        const correct = answer === testQuestions[currentQuestion].isTrue;
+        const newAnswers = [...testAnswers, { ...testQuestions[currentQuestion], userAnswer: answer, correct }];
+        setTestAnswers(newAnswers);
+        
+        if (currentQuestion < testQuestions.length - 1) {
+          setTimeout(() => {
+            setCurrentQuestion(currentQuestion + 1);
+          }, 1000);
+        } else {
+          setTimeout(() => {
+            const score = newAnswers.filter(a => a.correct).length;
+            setTestScore(score);
+          }, 1000);
+        }
+      };
+
+      // Match mode functions
+      const startMatch = () => {
+        const selected = [...VOCABULARY].sort(() => Math.random() - 0.5).slice(0, 5);
+        const words = selected.map((v, i) => ({ id: `word-${i}`, text: v.word, type: 'word', matchId: i }));
+        const meanings = selected.map((v, i) => ({ id: `meaning-${i}`, text: v.meaningVi, type: 'meaning', matchId: i }));
+        const shuffled = [...words, ...meanings].sort(() => Math.random() - 0.5);
+        
+        setMatchCards(shuffled);
+        setSelectedCards([]);
+        setMatchedPairs(new Set());
+        setMatchTime(0);
+        setMatchComplete(false);
+        
+        timerRef.current = setInterval(() => {
+          setMatchTime(t => t + 1);
+        }, 1000);
+      };
+
+      const handleMatchCardClick = (card) => {
+        if (matchedPairs.has(card.id) || selectedCards.find(c => c.id === card.id)) {
+          return;
+        }
+
+        const newSelected = [...selectedCards, card];
+        setSelectedCards(newSelected);
+
+        if (newSelected.length === 2) {
+          const [first, second] = newSelected;
+          
+          if (first.matchId === second.matchId && first.type !== second.type) {
+            // Correct match
+            setTimeout(() => {
+              setMatchedPairs(new Set([...matchedPairs, first.id, second.id]));
+              setSelectedCards([]);
+              
+              if (matchedPairs.size + 2 === matchCards.length) {
+                clearInterval(timerRef.current);
+                setMatchComplete(true);
+              }
+            }, 500);
+          } else {
+            // Wrong match
+            setTimeout(() => {
+              setSelectedCards([]);
+            }, 1000);
+          }
+        }
+      };
+
+      // Typing mode functions
+      const startTyping = () => {
+        const word = VOCABULARY[Math.floor(Math.random() * VOCABULARY.length)];
+        setTypingQuestion(word);
+        setTypingInput('');
+        setTypingFeedback(null);
+        setShowHint(false);
+      };
+
+      const handleTypingSubmit = () => {
+        const correct = typingInput.toLowerCase().trim() === typingQuestion.word.toLowerCase();
+        
+        let points = 1;
+        if (hintsUsed > 0) {
+          points -= hintsUsed * 0.5;
+        }
+        
+        if (correct) {
+          setTypingScore(typingScore + Math.max(points, 0));
+          setTypingFeedback({ correct: true, message: '✅ Chính xác!' });
+        } else {
+          speakWord(typingQuestion.word);
+          setTypingFeedback({ 
+            correct: false, 
+            message: `❌ Sai rồi! Đáp án đúng là: ${typingQuestion.word}` 
+          });
+        }
+        
+        setTypingTotal(typingTotal + 1);
+        setHintsUsed(0);
+        
+        setTimeout(() => {
+          startTyping();
+        }, 2000);
+      };
+
+      const handleShowHint = () => {
+        if (!showHint) {
+          setShowHint(true);
+          setHintsUsed(hintsUsed + 1);
+        }
+      };
+
+      // Mode initialization
+      useEffect(() => {
+        if (mode === 'test' && testQuestions.length === 0) {
+          startTest();
+        } else if (mode === 'match' && matchCards.length === 0) {
+          startMatch();
+        } else if (mode === 'typing' && !typingQuestion) {
+          startTyping();
+        }
+      }, [mode]);
+
+      // Cleanup timer
+      useEffect(() => {
+        return () => {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+          }
+        };
+      }, []);
+
+      return (
+        <div className="app-container">
+          <h1>✨ Flashcard Học Từ 📚</h1>
+          
+          <div className="mode-selector">
+            <button 
+              className={`mode-btn ${mode === 'study' ? 'active' : ''}`}
+              onClick={() => setMode('study')}
+            >
+              <span className="emoji">📖</span>
+              STUDY
+            </button>
+            <button 
+              className={`mode-btn ${mode === 'test' ? 'active' : ''}`}
+              onClick={() => setMode('test')}
+            >
+              <span className="emoji">📝</span>
+              TEST
+            </button>
+            <button 
+              className={`mode-btn ${mode === 'match' ? 'active' : ''}`}
+              onClick={() => setMode('match')}
+            >
+              <span className="emoji">🎮</span>
+              MATCH
+            </button>
+            <button 
+              className={`mode-btn ${mode === 'typing' ? 'active' : ''}`}
+              onClick={() => setMode('typing')}
+            >
+              <span className="emoji">⌨️</span>
+              TYPING
+            </button>
+          </div>
+
+          {mode === 'study' && (
+            <>
+              <div className="category-filter">
+                {categories.map(cat => (
+                  <button
+                    key={cat}
+                    className={`category-chip ${selectedCategory === cat ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setCurrentIndex(0);
+                      setIsFlipped(false);
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flashcard-container">
+                <div 
+                  className={`flashcard ${isFlipped ? 'flipped' : ''}`}
+                  onClick={handleCardClick}
+                >
+                  <div className="card-face card-front">
+                    <div className="card-category">{filteredVocab[currentIndex].category}</div>
+                    <div className="card-emoji">{filteredVocab[currentIndex].emoji}</div>
+                    <div className="card-word">{filteredVocab[currentIndex].word}</div>
+                    <div className="card-meaning-en">{filteredVocab[currentIndex].meaningEn}</div>
+                  </div>
+                  <div className="card-face card-back">
+                    <div className="card-category">{filteredVocab[currentIndex].category}</div>
+                    <div className="card-emoji">{filteredVocab[currentIndex].emoji}</div>
+                    <div className="card-word">{filteredVocab[currentIndex].word}</div>
+                    <div className="card-meaning-vi">{filteredVocab[currentIndex].meaningVi}</div>
+                    <div className="card-example">{filteredVocab[currentIndex].example}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="controls">
+                <button className="control-btn" onClick={handlePrev}>
+                  ◀️ Trước
+                </button>
+                <button className="control-btn primary" onClick={handleSpeakClick}>
+                  🔊 Phát âm
+                </button>
+                <button className="control-btn" onClick={handleNext}>
+                  Sau ▶️
+                </button>
+              </div>
+            </>
+          )}
+
+          {mode === 'test' && testScore === null && (
+            <div className="test-container">
+              <div className="question-card">
+                <div className="question-number">Câu {currentQuestion + 1}/10</div>
+                <div className="question-word">{testQuestions[currentQuestion]?.emoji} {testQuestions[currentQuestion]?.word}</div>
+                <div className="question-text">
+                  Nghĩa là: {testQuestions[currentQuestion]?.meaning}
+                </div>
+              </div>
+
+              <div className="answer-options">
+                <button 
+                  className={`answer-btn ${testAnswers[currentQuestion]?.userAnswer === true ? (testAnswers[currentQuestion]?.correct ? 'correct' : 'incorrect') : ''}`}
+                  onClick={() => handleTestAnswer(true)}
+                  disabled={testAnswers[currentQuestion]}
+                >
+                  ✅ Đúng (True)
+                </button>
+                <button 
+                  className={`answer-btn ${testAnswers[currentQuestion]?.userAnswer === false ? (testAnswers[currentQuestion]?.correct ? 'correct' : 'incorrect') : ''}`}
+                  onClick={() => handleTestAnswer(false)}
+                  disabled={testAnswers[currentQuestion]}
+                >
+                  ❌ Sai (False)
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === 'test' && testScore !== null && (
+            <div className="result-screen">
+              <div className="result-emoji">
+                {testScore >= 8 ? '🏆' : testScore >= 6 ? '👏' : '💪'}
+              </div>
+              <div className="result-score">{testScore}/10</div>
+              <div className="result-text">
+                {testScore >= 8 ? 'Xuất sắc!' : testScore >= 6 ? 'Tốt lắm!' : 'Cố gắng thêm nhé!'}
+              </div>
+              <button className="control-btn primary" onClick={startTest}>
+                🔄 Làm lại
+              </button>
+            </div>
+          )}
+
+          {mode === 'match' && !matchComplete && (
+            <div className="match-container">
+              <div className="timer">⏱️ {matchTime}s</div>
+              <div className="match-grid">
+                {matchCards.map(card => (
+                  <button
+                    key={card.id}
+                    className={`match-card ${
+                      matchedPairs.has(card.id) ? 'matched' : 
+                      selectedCards.find(c => c.id === card.id) ? 'selected' : 
+                      selectedCards.length === 2 && !selectedCards.find(c => c.id === card.id) ? 'wrong' : ''
+                    }`}
+                    onClick={() => handleMatchCardClick(card)}
+                    disabled={matchedPairs.has(card.id)}
+                  >
+                    {card.text}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {mode === 'match' && matchComplete && (
+            <div className="result-screen">
+              <div className="result-emoji">🎉</div>
+              <div className="result-score">{matchTime}s</div>
+              <div className="result-text">
+                Độ chính xác: 100%<br />
+                Hoàn thành xuất sắc!
+              </div>
+              <button className="control-btn primary" onClick={startMatch}>
+                🔄 Chơi lại
+              </button>
+            </div>
+          )}
+
+          {mode === 'typing' && typingQuestion && (
+            <div className="typing-container">
+              <div className="question-card">
+                <div className="question-word">{typingQuestion.emoji}</div>
+                <div className="question-text">{typingQuestion.meaningVi}</div>
+                {showHint && (
+                  <div className="hint-text">
+                    💡 Gợi ý: Bắt đầu bằng chữ "{typingQuestion.word.charAt(0)}" ({typingQuestion.word.length} chữ cái)
+                  </div>
+                )}
+              </div>
+
+              {typingFeedback && (
+                <div className={`typing-feedback ${typingFeedback.correct ? 'correct' : 'incorrect'}`}>
+                  {typingFeedback.message}
+                </div>
+              )}
+
+              <input
+                type="text"
+                className="typing-input"
+                placeholder="Nhập từ tiếng Anh..."
+                value={typingInput}
+                onChange={(e) => setTypingInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleTypingSubmit()}
+                disabled={typingFeedback !== null}
+              />
+
+              <div className="controls">
+                <button className="control-btn" onClick={handleShowHint}>
+                  💡 Gợi ý (-0.5đ)
+                </button>
+                <button className="control-btn primary" onClick={handleTypingSubmit}>
+                  ✅ Kiểm tra
+                </button>
+              </div>
+
+              <div className="stats-footer" style={{marginTop: '20px'}}>
+                <div className="stat-item">
+                  <span className="stat-value">{typingTotal}</span>
+                  <span className="stat-label">Đã làm</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-value">{typingScore.toFixed(1)}</span>
+                  <span className="stat-label">Điểm</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-value">{typingTotal > 0 ? ((typingScore/typingTotal)*100).toFixed(0) : 0}%</span>
+                  <span className="stat-label">Chính xác</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {mode === 'study' && (
+            <div className="stats-footer">
+              <div className="stat-item">
+                <span className="stat-value">{filteredVocab.length}</span>
+                <span className="stat-label">Tổng</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{studied.size}</span>
+                <span className="stat-label">Đã học</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{filteredVocab.length - studied.size}</span>
+                <span className="stat-label">Còn lại</span>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<FlashcardApp />, document.getElementById('root'));
+  </script>
+</body>
+</html>
